@@ -58,9 +58,9 @@ flowchart LR
 | 금융위원회 | RSS가 "점검 중"(503) | HTML 목록 + `srchText` 검색 파라미터 사용 |
 | KICPA 공지 | 상세 페이지가 포털 프레임(JS) 구조 | 메인 목록의 제목+미리보기 사용, **게시글 번호(`bltnNo`)가 밀리초 타임스탬프**임을 확인해 게시일 복원 |
 | KICPA CPA뉴스 | — | 공식 RSS |
-| 삼일PwC | `requests` 는 Akamai **403 차단** | Playwright(Chromium)로 렌더링, `pwcReleaseDate` 메타에서 게시일 추출 |
-| 삼정KPMG·한영EY | 목록이 JS 렌더링, 메뉴 링크가 다수 섞임 | 법인별 **기사 URL 정규식**으로 본문 링크만 선별, URL 속 날짜로 기간 밖 글을 미리 제외 |
-| 안진Deloitte | 보도자료 목록이 HTML에 노출되지 않음 | Google News RSS로 법인명 + 회계·감사·AI 키워드 기사 보강 |
+| 삼일PwC | `requests` 는 Akamai **403 차단** | Playwright(Chromium)로 렌더링, `pwcReleaseDate` 메타에서 게시일 추출. 홈페이지에서 **거버넌스센터** 최신 글 수집 |
+| 삼정KPMG·한영EY | 목록이 JS 렌더링, 메뉴 링크가 다수 섞임 | 법인별 **기사 URL 정규식**으로 본문 링크만 선별, URL·카드 속 날짜로 기간 밖 글을 미리 제외. **감사위원회 지원센터(ACI)** 카드뉴스 PDF, **EY Board Matters** 포함 |
+| 안진Deloitte | 보도자료 목록이 HTML에 노출되지 않고, 게시일이 내장 데이터에 `2026년 11월 9일` 형태로만 존재 | **기업지배기구발전센터·회계감사 perspectives** 페이지를 직접 수집, 한글 날짜 파싱 + Google News 보강 |
 | 공통 | 해외 IP(GitHub 서버) 차단 가능성 | 감독기관 수집 실패 시 **Google News RSS로 자동 대체**, 부록에 실패 사유 기록 |
 
 ## 5. 데이터 가공 규칙

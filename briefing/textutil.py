@@ -69,9 +69,10 @@ def find_published(html: str) -> date | None:
         key = (m.get("property") or m.get("name") or "").lower()
         if re.search(r"publish|releasedate|created", key) and (d := parse_date(m.get("content"))):
             return d
-    m = re.search(r'"datePublished"\s*:\s*"([^"]+)"', html)
-    if m and (d := parse_date(m.group(1))):
-        return d
+    # JSON-LD / 내장 데이터: "datePublished":"2026-11-09" 또는 \"datePublished\": \"2026년 11월 9일\"
+    for m in re.finditer(r'datePublished\W{1,8}([^"\'\\<]{6,40})', html):
+        if d := parse_date(m.group(1)):
+            return d
     for t in soup.find_all("time"):
         if d := parse_date(t.get("datetime") or t.get_text(" ")):
             return d

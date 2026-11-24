@@ -31,6 +31,16 @@ def test_date_from_url():
     assert date_from_url("https://www.pwc.com/kr/ko/insights/issue-brief/genai.html") is None
 
 
+def test_month_only_urls_and_embedded_dates():
+    from briefing.collectors.big4 import _month_floor
+    from briefing.textutil import find_published
+    assert _month_floor("https://kpmg.com/kr/ko/insights/aci/aci-monthly-newsletter-202611.html") == date(2026, 12, 1)
+    assert _month_floor("https://x/perspectives/ccg-newsletter-2026-10.html") == date(2026, 11, 1)
+    assert _month_floor("https://www.ey.com/ko_kr/newsroom/2026/12/x") == date(2027, 1, 1)
+    html = '<script>{\\"datePublished\\": \\"2026년 11월 9일\\"}</script>'
+    assert find_published(html) == date(2026, 11, 9)
+
+
 def test_kicpa_bulletin_number_is_timestamp():
     assert bltn_date("11755058839387") == date(2025, 8, 13)
     assert bltn_date("garbage") is None
