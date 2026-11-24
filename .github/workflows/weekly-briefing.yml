@@ -1,0 +1,76 @@
+name: Weekly Accounting & Audit Briefing
+
+on:
+  schedule:
+    # GitHub cron 은 UTC 기준이며 정시에서 5~20분 늦게 시작될 수 있습니다.
+    # 일요일 22:30 UTC = 월요일 07:30 KST → 수집·요약(약 5~8분) 후 8시 전후 메일 도착
+    - cron: "30 22 * * 0"
+  workflow_dispatch:        # Actions 탭에서 수동 실행
+    inputs:
+      send_email:
+        description: "메일 발송 여부"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write           # reports/, state/ 커밋용
+
+concurrency:
+  group: weekly-briefing
+  cancel-in-progress: false
+
+jobs:
+  briefing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      TZ: Asia/Seoul
+      OUTPUT_DIR: reports
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      MAIL_FROM: ${{ secrets.MAIL_FROM }}
+      MAIL_TO: ${{ secrets.MAIL_TO }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install Korean fonts (PDF 한글 깨짐 방지)
+        run: sudo apt-get update -y && sudo apt-get install -y fonts-noto-cjk fonts-nanum
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Unit tests
+        run: python -m pytest -q
+
+      - name: Run pipeline
+        run: |
+          ARGS="--html-out docs/latest.html"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.send_email }}" = "false" ]; then
+            ARGS="$ARGS --no-email"
+          fi
+          python main.py $ARGS
+
+      - name: Commit report & state
+        run: |
+          git config user.name  "briefing-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports state docs/latest.html
+          git diff --cached --quiet || git commit -m "briefing: $(date +%F) weekly report"
+          git push
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-briefing-pdf
+          path: reports/*.pdf
+          retention-days: 90

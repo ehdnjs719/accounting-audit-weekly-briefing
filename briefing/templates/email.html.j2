@@ -1,0 +1,24 @@
+<div style="font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;max-width:640px;color:#16213a;line-height:1.6">
+  <div style="background:#1f4fd1;color:#fff;border-radius:12px;padding:16px 18px">
+    <div style="font-size:11px;letter-spacing:.1em;opacity:.85;font-weight:700">WEEKLY ACCOUNTING &amp; AUDIT INSIGHT</div>
+    <div style="font-size:20px;font-weight:800;margin-top:2px">주간 회계·감사 브리핑</div>
+    <div style="font-size:13px;opacity:.9">{{ report_date }} · 수집 기간 {{ since }} ~ {{ until }}</div>
+  </div>
+  <h3 style="margin:18px 0 8px">이번 주 Top 3</h3>
+  {% for t in top3 %}
+  <div style="border-left:4px solid #1f4fd1;background:#eef3ff;border-radius:8px;padding:9px 12px;margin-bottom:8px">
+    <div style="font-weight:800">{{ loop.index }}. {{ t.headline }}</div>
+    <div style="font-size:13px;color:#2b3852">{{ t.brief }}</div>
+    <div style="font-size:12px;margin-top:3px"><a href="{{ t.art.url }}" style="color:#1f4fd1">원문 바로가기 →</a></div>
+  </div>
+  {% endfor %}
+  <h3 style="margin:18px 0 6px">섹션별 수집 현황</h3>
+  {% for s in sections %}
+  <div style="font-size:13px;margin:8px 0 2px;font-weight:700">섹션 {{ s.no }}. {{ s.name }} ({{ s.arts|length }}건)</div>
+  <ul style="margin:0;padding-left:18px;font-size:13px">
+    {% for a in s.arts[:6] %}<li><a href="{{ a.url }}" style="color:#16213a">{{ a.title }}</a>{% if a.dup_of %} <span style="color:#b45309">(중복: {{ a.dup_of.location }})</span>{% endif %}</li>{% endfor %}
+    {% if s.arts|length > 6 %}<li style="color:#5d6b82">외 {{ s.arts|length - 6 }}건은 첨부 PDF 참고</li>{% endif %}
+  </ul>
+  {% endfor %}
+  <p style="font-size:12px;color:#5d6b82;margin-top:18px">전체 요약과 감사인 시사점은 첨부한 PDF({{ filename }})에서 확인하세요.<br>자동 발송 메일입니다 · 요약 엔진: {{ engine }}</p>
+</div>
